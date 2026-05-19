@@ -108,31 +108,48 @@ def get_propojene_ico(ico: str) -> list[str]:
 
 def build_skupina(root_ico: str, extra_icos: list[str] | None = None) -> list[dict]:
     """
-    Sestaví seznam firem skupiny. Začíná od root_ico, přidá extra_icos
-    a pokusí se automaticky najít propojené subjekty.
+    Sestaví seznam firem skupiny.
+    Pokud je v config.py SKUPINA_FIRMY vyplněn, použije ho přímo (rychlé).
+    Jinak začíná od root_ico a pokusí se najít propojené subjekty přes ARES.
     """
-    print(f"\n[ARES] Zjišťuji skupinu firem pro IČO {root_ico}...")
+    from config import SKUPINA_FIRMY  # import zde, aby nevznikl cirkulární import
 
-    skupina: dict[str, dict] = {}
+    # Rychlá cesta: předdefinovaný seznam firem
+    if SKUPINA_FIRMY:
+        print(f"\n[ARES] Používám předdefinovaný seznam {len(SKUPINA_FIRMY)} firem skupiny.")
+        print("  Ověřuji aktuální stav přes ARES...")
+        skupina = []
+        for entry in SKUPINA_FIRMY:
+            ico = entry["ico"]
+            info = get_firma(ico)
+            if info.get("nazev"):
+                firma = {**entry, **info}  # ARES data mají přednost
+            else:
+                firma = {**entry, "stavSubjektu": "nelze ověřit"}
+            skupina.append(firma)
+            stav = firma.get("stavSubjektu", "")
+            print(f"  + {ico}  {firma.get('nazev', entry['nazev'])}  [{stav}]")
+        return skupina
+
+    # Fallback: automatické hledání přes ARES
+    print(f"\n[ARES] Zjišťuji skupinu firem pro IČO {root_ico}...")
+    skupina_dict: dict[str, dict] = {}
 
     def _pridej(ico: str):
-        if ico in skupina:
+        if ico in skupina_dict:
             return
         info = get_firma(ico)
         if not info.get("nazev"):
             print(f"  [ARES] IČO {ico} – firma nenalezena, přeskakuji")
             return
-        skupina[ico] = info
+        skupina_dict[ico] = info
         print(f"  + {ico}  {info['nazev']}  ({info.get('stavSubjektu', '')})")
 
     _pridej(root_ico)
-
-    # Přidat manuálně zadaná IČO
     for ico in (extra_icos or []):
         _pridej(ico)
 
-    # Automaticky najít propojené
-    print(f"  Hledám propojené subjekty...")
+    print("  Hledám propojené subjekty přes ARES...")
     propojene = get_propojene_ico(root_ico)
     if propojene:
         print(f"  Nalezeno {len(propojene)} potenciálně propojených IČO: {propojene}")
@@ -140,6 +157,5 @@ def build_skupina(root_ico: str, extra_icos: list[str] | None = None) -> list[di
             _pridej(ico)
     else:
         print("  Žádné propojené subjekty přes ARES API nenalezeny.")
-        print("  Tip: Zkontrolujte ručně na https://or.justice.cz/")
 
-    return list(skupina.values())
+    return list(skupina_dict.values())
