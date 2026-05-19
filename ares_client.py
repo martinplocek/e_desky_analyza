@@ -32,7 +32,7 @@ def get_firma(ico: str) -> dict:
         "ico": data.get("ico", ico),
         "nazev": data.get("obchodniJmeno", ""),
         "sidlo": _sidlo(data),
-        "pravniForma": data.get("pravniForma", {}).get("nazev", ""),
+        "pravniForma": (data.get("pravniForma") or {}).get("nazev", "") if isinstance(data.get("pravniForma"), dict) else str(data.get("pravniForma") or ""),
         "datumVzniku": data.get("datumVzniku", ""),
         "datumZaniku": data.get("datumZaniku", ""),
         "stavSubjektu": data.get("stavSubjektu", {}).get("nazev", ""),

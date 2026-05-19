@@ -2,12 +2,10 @@
 title STYLGROUP analyza
 cd /d "%~dp0"
 
-:: Vytvorit .env pokud neexistuje
-if not exist .env (
-    echo EDESKY_API_KEY=R0Mek8f0ePnpOmh9188oFRFNvz6Uq8hW>.env
-    echo CUZK_WSDP_USER=>>.env
-    echo CUZK_WSDP_PASS=>>.env
-)
+:: Vytvorit .env (vzdy prepsat, aby byl spravny obsah)
+echo EDESKY_API_KEY=R0Mek8f0ePnpOmh9188oFRFNvz6Uq8hW>.env
+echo CUZK_WSDP_USER=>>.env
+echo CUZK_WSDP_PASS=>>.env
 
 :: Zkusit python primo z PATH
 set PYTHON=
