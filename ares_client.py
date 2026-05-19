@@ -42,10 +42,10 @@ def get_firma(ico: str) -> dict:
 def _sidlo(data: dict) -> str:
     a = data.get("sidlo", {})
     parts = [
-        a.get("nazevObce", ""),
-        a.get("nazevUlice", ""),
-        a.get("cisloDomovni", ""),
-        a.get("psc", ""),
+        str(a.get("nazevObce") or ""),
+        str(a.get("nazevUlice") or ""),
+        str(a.get("cisloDomovni") or ""),
+        str(a.get("psc") or ""),
     ]
     return " ".join(p for p in parts if p)
 
